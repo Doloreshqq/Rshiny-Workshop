@@ -1,0 +1,602 @@
+---
+title: "Intro to Rshiny"
+author: "Qin Huang"
+date: "2025-05-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+```
+
+## Introduction
+
+**Objective:** Understand what R Shiny is and what it's used for.
+
+### What is Shiny?
+
+R Shiny is an R package developed by Posit (formerly RStudio) that allows you to build interactive web applications directly from R --- no need to know HTML, CSS, or JavaScript.
+
+It's a powerful tool for turning R code, data analyses, and visualizations into responsive user interfaces.
+
+### Key features
+
+Feature \| Description
+
+💻 Built with R \| Create web apps entirely using R
+
+🔄 Interactive \| Reacts instantly to user input without reloading the page
+
+📈 Visualization \| Seamless integration with plotting libraries like ggplot2, plotly
+
+📊 Data-driven \| Ideal for data dashboards, reports, and model interfaces
+
+🌍 Web deployment \| Deploy via Shiny Server, shinyapps.io, or RStudio Connect
+
+### Installing Shiny
+
+```{r}
+# Install Shiny if not already installed
+# install.packages("shiny")
+
+# Load the package
+
+library(shiny)
+```
+
+### Basic Structure of a Shiny App
+
+Every Shiny app has three key components:
+
+1.  **UI (User Interface):**\
+
+    Defines the layout and appearance of the app --- what the user sees.
+
+2.  **Server Function:**\
+
+    Contains the logic for handling user input, generating outputs (text, plots, tables), etc.
+
+3.  **shinyApp():**\
+
+    A function that puts everything together to launch the app.
+
+Here is a small example:
+
+```{r}
+
+ui <- fluidPage(
+  titlePanel("My First Shiny App"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput("num", "Choose a number:", 1, 100, 50)
+    ),
+    mainPanel(
+      textOutput("result")
+    )
+  )
+)
+
+server <- function(input, output) {
+  output$result <- renderText({
+    paste("You selected:", input$num)
+  })
+}
+
+shinyApp(ui = ui, server = server)
+
+```
+
+## Basic functions
+
+### textInput
+
+The basic structure of textInput is as below:
+
+`textInput(inputId,label,value="")`
+
+where `inputId` is the name server will refer to, `label` is the content showing in the ui panel, `value` is the default value.
+
+Here's an example, we want to create a small page to present personal information the user input.
+
+```{r}
+ui <- fluidPage(
+  titlePanel("Test textInput"),
+  sidebarLayout(
+    sidebarPanel(
+      h4("Enter the personal information"),
+      textInput("name", "Enter your name:"),
+      textInput("age", "Enter your age:")
+    ),
+    mainPanel(
+      h3('Personal information'),
+      textOutput("nameout"),
+      textOutput('ageout')
+    )
+  )
+)
+
+server <- function(input, output) {
+  output$nameout <- renderText(input$name)
+  output$ageout <- renderText(input$age)
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### numericInput
+
+The basic structure of numericInput is as below:
+
+`numericInput(inputId,label,value,min=NA,max=NA,step=NA)`
+
+where `inputId` is the name server will refer to, `label` is the content showing in the ui panel, `value` is the initial value, `min` is minimum allowed value, `max` is maximum allowed value, `step` is the interval to use when stepping between min and max.
+
+Here's an example,
+
+```{r}
+ui <- fluidPage(
+  titlePanel("Numeric Input Example"),
+  numericInput("num", "Choose a number:", value = 10, min = 1, max = 100),
+  textOutput("numout")
+)
+
+server <- function(input, output) {
+  output$numout <- renderText(paste("You chose number:", input$num))
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### radioButtons
+
+The basic structure of radioButtons is as below:
+
+`radioButtons(inputId,label,choices=NULL,selected=NULL)`
+
+where `inputId` is the name server will refer to, `label` is the content showing in the ui panel, `choice` is the list of values to select from (the values should be strings), `selected` is the initially selected value.
+
+Here's an example,
+
+```{r}
+ui <- fluidPage(
+  titlePanel("Radio Buttons Example"),
+  radioButtons("gender", "Select Gender:", choices = c("Male", "Female", "Prefer not to answer")),
+  textOutput("genderout")
+)
+
+server <- function(input, output) {
+  output$genderout <- renderText(paste("Gender:", input$gender))
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### checkboxInput
+
+The basic structure of checkboxInput is as below:
+
+`checkboxInput(inputId,label,value=FALSE)`
+
+where `inputId` is the name server will refer to, `label` is the content showing in the ui panel, `value` is the initial value (true/false).
+
+Here's an example,
+
+```{r}
+ui <- fluidPage(
+  titlePanel("Checkbox Input Example"),
+  checkboxInput("subscribe", "Subscribe to newsletter", value = FALSE),
+  textOutput("subscribeout")
+)
+
+server <- function(input, output) {
+  output$subscribeout <- renderText({
+    if (input$subscribe) "Subscribed" else "Not Subscribed"
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### checkboxGroupInput
+
+The basic structure of checkboxInput is as below:
+
+`checkboxInput(inputId,label,choices=NULL,selected=NULL)`
+
+where `inputId` is the name server will refer to, `label` is the content showing in the ui panel, `choices` is the list of values to show checkboxes for, `selected` is the values that could be initially selected.
+
+Here's an example,
+
+```{r}
+ui <- fluidPage(
+  titlePanel("Checkbox Group Input Example"),
+  checkboxGroupInput("hobbies", "Select hobbies:",
+                     choices = c("Reading", "Traveling", "Gaming")),
+  textOutput("hobbiesout")
+)
+
+server <- function(input, output) {
+  output$hobbiesout <- renderText(paste("Hobbies:", paste(input$hobbies, collapse = ", ")))
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### sliderInput
+
+Usage of sliderInput is as:
+
+`sliderInput(inputId,label,min,max,value,step=NUL)`
+
+where `inputId` is the name server will refer to, `label` is the content showing in the ui panel, `value` is the initial value, `min` is minimum allowed value, `max` is maximum allowed value, `value` is the initial value of the slider, `step` is the interval to use when stepping between min and max.
+
+Here's an example,
+
+```{r}
+ui <- fluidPage(
+  titlePanel("Slider Input Example"),
+  sliderInput("range", "Choose a range:", min = 0, max = 100, value = c(20, 80)),
+  textOutput("rangeout")
+)
+
+server <- function(input, output) {
+  output$rangeout <- renderText(paste("Range selected:", paste(input$range, collapse = " to ")))
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### selectInput
+
+Usage of selectInput is as:
+
+`selectInput(inputId,label,choices,selected=NULL,multiple=FALSE)`
+
+where `inputId` is the name server will refer to, `label` is the content showing in the ui panel, `value` is the initial value, `choices` is the list of values to select from, `selected` is the values that could be initially selected, `multiple` is the parameter to determine whether selection of multiple items is allowed.
+
+Here's an example,
+
+```{r}
+ui <- fluidPage(
+  titlePanel("Select Input Example"),
+  selectInput("country", "Choose a country:",
+              choices = c("USA", "Canada", "UK")),
+  textOutput("countryout")
+)
+
+server <- function(input, output) {
+  output$countryout <- renderText(paste("Selected country:", input$country))
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### fileInput
+
+Usage of fileInput is as:
+
+`fileInput(inputId,label,multiple=FALSE,accept=NULL,buttonLabel="Browse..")`
+
+where `inputId` is the name server will refer to, `label` is the content showing in the ui panel, `multiple` is the parameter to determine whether the user should be allowed to select and upload multiple files at once, `accept` is used to restrict the type of upload file(s), `buttonLabel` is the label used on the button.
+
+Here's an example,
+
+```{r}
+ui <- fluidPage(
+  titlePanel("File Input Example"),
+  fileInput("file", "Upload a file"),
+  textOutput("fileout")
+)
+
+server <- function(input, output) {
+  output$fileout <- renderText({
+    if (is.null(input$file)) {
+      "No file uploaded"
+    } else {
+      paste("Uploaded file:", input$file$name)
+    }
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### plotOutput
+
+**Usage:**
+
+`plotOutput(outputId, width = "100%", height = "400px", click = NULL, dblclick = NULL, hover = NULL, brush = NULL)`
+
+**Description:**
+
+`plotOutput` is used in the **UI** to create a placeholder for a plot generated on the **server side** using `renderPlot()`. This function is useful for displaying static or interactive plots generated using R's base plotting system or `ggplot2`.
+
+Parameters:
+
+-   `outputId`: A string that identifies the output and links it to the corresponding `renderPlot()` in the server.
+
+-   `width`: Width of the plot output (can be `"100%"`, `"400px"`, etc.).
+
+-   `height`: Height of the plot (default is `"400px"`).
+
+-   `click`, `dblclick`, `hover`, `brush`: Optional input event handlers that allow interaction with the plot (e.g., detecting where the user clicked).
+
+**Example**
+
+```{r}
+ui <- fluidPage(
+  titlePanel("plotOutput Example"),
+  plotOutput("myplot")
+)
+
+server <- function(input, output) {
+  output$myplot <- renderPlot({
+    plot(rnorm(100), rnorm(100), col = "blue", pch = 19,
+         main = "Random Scatter Plot")
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### tableOutput
+
+**Usage**:
+
+`tableOutput(outputId)`
+
+**Description:**
+
+`tableOutput` is used in the **UI** to display data frames or matrices as HTML tables. On the **server side**, it must be linked with `renderTable()` to define the content of the table. It\'s ideal for displaying clean and simple tabular data in a reactive application.
+
+**Parameters:**
+
+`outputId`: A string identifying the table output slot and linking it with `renderTable()` on the server.
+
+> Note: For more interactive tables (e.g., with sorting or filtering), use `DT::dataTableOutput()` instead.
+
+**Example:**
+
+```{r}
+ui <- fluidPage(
+  titlePanel("tableOutput Example"),
+  tableOutput("mytable")
+)
+
+server <- function(input, output) {
+  output$mytable <- renderTable({
+    head(mtcars, 5)
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### uiOutput
+
+**Usage**:
+
+`uiOutput(outputId)`
+
+**Description:**
+
+`uiOutput` is used in the **UI** to create a dynamic UI element that is generated on the **server side** using `renderUI()`. This is helpful when your UI needs to change based on user input --- for example, displaying different types of inputs, conditional panels, or layout components depending on previous selections.
+
+**Parameters:**
+
+`outputId`: A string that identifies the output and links it to the corresponding `renderUI()` function in the server.
+
+**Example:**
+
+```{r}
+ui <- fluidPage(
+  titlePanel("uiOutput Example"),
+  radioButtons("inputType", "Choose input type:",
+               choices = c("Text", "Number")),
+  uiOutput("dynamicInput"),
+  textOutput("valueout")
+)
+
+server <- function(input, output) {
+  output$dynamicInput <- renderUI({
+    if (input$inputType == "Text") {
+      textInput("myinput", "Enter text:")
+    } else {
+      numericInput("myinput", "Enter number:", value = 0)
+    }
+  })
+
+  output$valueout <- renderText({
+    paste("You entered:", input$myinput)
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+## Reactive Expressions
+
+### reactive()
+
+**Usage:**
+
+<div>
+
+reactive({
+
+\# some expression
+
+})
+
+</div>
+
+**Description:**
+
+-   `reactive()` is used to define **reactive expressions**, which are like formulas in Excel.
+
+-   It **returns a reactive object** that can be used in other parts of the app (e.g., in `renderText()`, `renderPlot()`).
+
+-   It **recalculates automatically** when any of the inputs inside it change, but only when **it's actually called**.
+
+**Example:**
+
+```{r}
+ui <- fluidPage(
+  numericInput("x", "Enter a number", 1),
+  numericInput("y", "Enter another number", 1),
+  textOutput("sum")
+)
+
+server <- function(input, output) {
+  total <- reactive({
+    input$x + input$y
+  })
+
+  output$sum <- renderText({
+    paste("The sum is:", total())
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### observe()
+
+**Usage:**
+
+<div>
+
+observe({
+
+\# reactive expression without output
+
+})
+
+</div>
+
+**Description:**
+
+-   `observe()` is used for **side effects** --- code that doesn\'t return a value to UI but **does something**, like logging, updating inputs, or printing.
+
+-   It automatically tracks the reactive inputs inside it.
+
+**Example:**
+
+```{r}
+ui <- fluidPage(
+  titlePanel("observe() Example"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      numericInput("num", "Enter a number:", value = 1),
+      textInput("log", "System log (auto updated):", value = "")
+    ),
+    
+    mainPanel(
+      textOutput("square")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  
+  # This observe() does two things:
+  # 1. Prints to the R console
+  # 2. Updates a text input with a message
+  observe({
+    val <- input$num
+    log_msg <- paste("User entered:", val, "at", Sys.time())
+    
+    print(log_msg)
+    updateTextInput(session, "log", value = log_msg)
+  })
+  
+  output$square <- renderText({
+    paste("Square of the number is:", input$num^2)
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### observeEvent()
+
+**Usage:**
+
+`observeEvent(eventExpr, handlerExpr, ignoreInit = FALSE)`
+
+**Description:**
+
+-   `observeEvent()` is a **trigger-based** version of `observe()` --- it only runs **when a specific input changes**.
+
+-   It\'s useful for **buttons** and **event-driven logic**.
+
+**Example:**
+
+```{r}
+ui <- fluidPage(
+  numericInput("x", "Enter a number", 1),
+  actionButton("go", "Print number")
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$go, {
+    print(paste("Button clicked. x =", input$x))
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### actionButton
+
+**Usage:**
+
+`actionButton(inputId, label, icon = NULL)`
+
+**Description:**
+
+-   Creates a button the user can click to trigger actions.
+
+-   Its value is an integer that increases by 1 each time it\'s clicked.
+
+-   Often used with `observeEvent()` or `eventReactive()`.
+
+### conditionPanel
+
+**Usage:**
+
+`conditionalPanel(condition, ui_element)`
+
+**Description:**
+
+-   Shows or hides UI elements **based on JavaScript expressions** (not R expressions!).
+
+-   It is used to make the interface **dynamic without reloading the page**.
+
+-   The `condition` should be a **JavaScript condition**, e.g., `input.showExtra == true`.
+
+**Example:**
+
+```{r}
+ui <- fluidPage(
+  checkboxInput("show", "Show more options", FALSE),
+  conditionalPanel(
+    condition = "input.show == true",
+    textInput("extra", "Extra input:")
+  )
+)
+
+server <- function(input, output) {}
+
+shinyApp(ui = ui, server = server)
+
+```
+
+## Resource
+
+For information, you can check via <https://shiny.posit.co/r/getstarted/shiny-basics/lesson1/> to learn more.
+
+### 
